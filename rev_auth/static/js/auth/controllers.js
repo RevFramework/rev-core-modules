@@ -13,7 +13,20 @@ app.controller('UserMenuController', function($scope, UserService) {
 });
 
 app.controller('LoginFormController', function($scope, UserService) {
-	$scope.doLogin = UserService.doLogin;
+	
+	$scope.loading = false;
+	$scope.user = {};
+	
+	$scope.doLogin = function() {
+		if ($scope.loginForm.$valid) {
+			$scope.loading = true;
+			UserService.doCredentialsLogin(
+				$scope.user.email,
+				$scope.user.password
+			);
+		}
+	};
+	
 });
 
 app.controller('LogoutController', function($scope, UserService) {

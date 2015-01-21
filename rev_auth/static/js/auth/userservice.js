@@ -7,9 +7,10 @@ app.service('UserService', function($rootScope) {
 		return _isLoggedIn;
 	}
 	
-	this.doLogin = function() {
-		_isLoggedIn = true;
-		$rootScope.$broadcast('userStateChanged');
+	this.doCredentialsLogin = function(email, password) {
+		console.log(email, password);
+		//_isLoggedIn = true;
+		//$rootScope.$broadcast('userStateChanged');
 	};
 
 	this.doLogout = function() {
