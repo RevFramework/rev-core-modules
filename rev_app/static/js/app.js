@@ -1,9 +1,5 @@
 
-var app = angular.module('revapp', ['ui.bootstrap', 'ui.router']);
-
-app.controller('NavbarController', function($scope) {
-	
-});
+var app = angular.module('revapp', ['ui.bootstrap', 'ui.router', 'toaster']);
 
 app.config(function($stateProvider, $urlRouterProvider) {
 

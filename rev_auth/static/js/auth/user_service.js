@@ -1,5 +1,5 @@
 
-app.service('UserService', function($rootScope) {
+app.service('UserService', function($rootScope, NotifyService) {
 	
 	var _isLoggedIn = false;
 	

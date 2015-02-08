@@ -12,13 +12,16 @@ app.controller('UserMenuController', function($scope, UserService) {
 	$scope.$on('userStateChanged', updateUserMenu);
 });
 
-app.controller('LoginFormController', function($scope, UserService) {
+app.controller('LoginFormController', function($scope, UserService, NotifyService) {
 	
 	$scope.loading = false;
 	$scope.user = {};
 	
 	$scope.doLogin = function() {
-		if ($scope.loginForm.$valid) {
+		if (!$scope.loginForm.$valid) {
+			NotifyService.error('Please correct the highlighted fields', 'Login Error');
+		}
+		else {
 			$scope.loading = true;
 			UserService.doCredentialsLogin(
 				$scope.user.email,

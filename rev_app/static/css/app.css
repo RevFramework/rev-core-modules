@@ -12,3 +12,12 @@
 body {
 	background: #EEE;
 }
+
+/* Footer Style */
+.app-footer {
+	position: absolute;
+	bottom: 0px;
+	width: 100%;
+	background: #F8F8F8;
+	padding: 10px;
+}
