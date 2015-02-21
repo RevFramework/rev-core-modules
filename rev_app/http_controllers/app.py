@@ -1,8 +1,8 @@
 
-from rev.http import RevHTTPController
 from flask import render_template, current_app, request, abort
+from flask.ext.classy import FlaskView
 
-class RevAppHTTPController(RevHTTPController):
+class RevAppHTTPController(FlaskView):
     route_base = '/'
 
     def index(self):
