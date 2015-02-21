@@ -19,13 +19,13 @@ MODEL_VIEW_TYPES = [
 
 MODIFY_ACTIONS = ['insert_before','insert_after','insert_inside','replace','remove']
 
-def get_xml_child_element_string(parent_node):
+def get_xml_child_element_string(parent_node, output_format='xml'):
     """
     Returns a string concatenation of all child nodes of the specified parent
     """
-    return ''.join([etree.tostring(child_elem, pretty_print=True).decode('utf8') for child_elem in parent_node])
+    return ''.join([etree.tostring(child_elem, pretty_print=True, method=output_format).decode('utf8') for child_elem in parent_node])
 
-def apply_view_modifications(base_view_source, modify_views):
+def apply_view_modifications(base_view_source, modify_views, output_format='xml'):
     """
     Apply changes specified in the stack of modify_views to the target view.
     
@@ -35,7 +35,7 @@ def apply_view_modifications(base_view_source, modify_views):
     """
     
     #from pprint import pprint
-    #print('BASE VIEW:\n' + base_view)
+    #print('BASE VIEW:\n' + base_view_source)
     #print('MODIFY VIEWS:')
     #pprint(modify_views)
     
@@ -119,7 +119,7 @@ def apply_view_modifications(base_view_source, modify_views):
                     match_elem.insert(new_index, new_element)
                     new_index += 1
     
-    return get_xml_child_element_string(view_tree.getroot())
+    return get_xml_child_element_string(view_tree.getroot(), output_format=output_format)
 
 class View(MetadataModel):
 
@@ -185,6 +185,8 @@ class View(MetadataModel):
         (xml_module, xml_id, modify_view_source), and will be injected into the view
         stack at the appropriate place in order to check its compatibility with
         existing views.
+        
+        Returns view as an HTML formatted string
         """
 
         base_view_rec = self.find({'xml_module' : base_view_module, 'xml_id' : base_view_id}, read_fields=['source'])[0]
@@ -200,9 +202,12 @@ class View(MetadataModel):
         if not modify_view_recs:
             
             if tm_view_source:
-                return apply_view_modifications(base_view_source, [tm_view_source])
+                return apply_view_modifications(base_view_source, [tm_view_source], 'html')
             else:
-                return base_view_source
+                # Output XML View as HTML
+                view_xmldata = StringIO('<View>' + base_view_source + '</View>')
+                view_tree = etree.parse(view_xmldata)
+                return get_xml_child_element_string(view_tree.getroot(), 'html')
         
         else:
             
@@ -227,11 +232,11 @@ class View(MetadataModel):
                         if test_modify_view and mod == tm_view_module and view_id == tm_view_id:
                             # test out the modifications
                             modify_views.append((tm_view_module, tm_view_id, tm_view_source))
-                            return apply_view_modifications(base_view_source, modify_views)
+                            return apply_view_modifications(base_view_source, modify_views, 'html')
                         else:
                             modify_views.append((mod, view_id, views_index[mod][view_id]))
         
-            return apply_view_modifications(base_view_source, modify_views)
+            return apply_view_modifications(base_view_source, modify_views, 'html')
 
     def get_rendered_view(self, module, view_id, view_context={}):
         """

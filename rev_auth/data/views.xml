@@ -9,12 +9,12 @@
 	        <li ng-controller="UserMenuController" ng-class="{dropdown: isLoggedIn}" ng-attr-dropdown="isLoggedIn">
 	        
 		        <a href="#/login" ng-if="!isLoggedIn">
-					<span class="glyphicon glyphicon-user" style="margin-right:5px;"> </span> Sign In
+					<span class="glyphicon glyphicon-user" style="margin-right:5px;"></span> Sign In
 				</a>
 				
 				<a href="#" ng-if="isLoggedIn" class="dropdown-toggle" dropdown-toggle="true" role="button">
-					<span class="glyphicon glyphicon-user" style="margin-right:5px;"> </span> {{ user.name }}
-					<span class="caret"> </span>
+					<span class="glyphicon glyphicon-user" style="margin-right:5px;"></span> {{ user.name }}
+					<span class="caret"></span>
 				</a>
 				<ul class="dropdown-menu" ng-if="isLoggedIn" role="menu" name="user_menu">
 					<li><a href="#/preferences" name="preferences_link">Preferences</a></li>
@@ -30,7 +30,7 @@
 	<View id="login" name="Sign In Form">
 		
 		<div class="row" ng-controller="LoginFormController">
-			<div class="col-md-3"> </div>
+			<div class="col-md-3"></div>
 
 			<div class="col-md-6">
 			
@@ -40,6 +40,8 @@
 					</div>
 					<div class="panel-body">
 						<form novalidate="" name="loginForm" class="form-horizontal">
+						
+							<field name="blah" />
 						
 							<div class="form-group" ng-class="{'has-error': loginForm.user_email.$invalid &amp;&amp; (loginForm.user_email.$touched || loginForm.$submitted)}">
 								<label for="user_email" class="col-sm-3 control-label">E-mail</label>
@@ -86,12 +88,13 @@
 								</div>
 							</div>
 						</form>
+						
 					</div>
 				</div>
 			
 			</div>
 
-			<div class="col-md-3"> </div>
+			<div class="col-md-3"></div>
 		</div>
 		
 	</View>
