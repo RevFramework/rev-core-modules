@@ -7,7 +7,8 @@ class User(Model):
     _description = 'User'
     
     id = fields.RecordIDField(_('User ID'))
-    name = fields.TextField(_('Login Name'))
-    email = fields.TextField(_('E-mail Address'))
+    username = fields.TextField(_('Login Name'))
+    email = fields.EmailAddressField(_('E-mail Address'))
+    password = fields.PasswordField(_('Password'))
 
     _unique = ['name']
