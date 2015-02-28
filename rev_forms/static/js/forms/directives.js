@@ -28,6 +28,8 @@ app.directive('formOptions', function(FormsService, $compile, $log) {
 					element.addClass('form-'+opts.layout);
 				}
 			}
+			else opts = {};
+			opts.form
 		}
 	}
 });
@@ -39,14 +41,15 @@ app.directive('field', function(FormsService, $compile, $log) {
 	return {
 		restrict: 'E',
 		replace: true,
-		require: ['^formModel', '?^formOptions'],
+		require: ['^form', '^formModel', '?^formOptions'],
 		link: function(scope, element, attrs, controllers) {
 
 			var errorPlaceholder = '<div class="alert alert-danger" role="alert"><strong>Field Error</strong> Check console for details.</div>';
 
-			var modelName = controllers[0].model;
+			var formCtrl = controllers[0];
+			var modelName = controllers[1].model;
 			var fieldName = element.attr('name');
-			var formOptions = controllers[1] ? controllers[1].options : null;
+			var formOptions = controllers[2] ? controllers[2].options : null;
 			
 			if (!modelName || !fieldName) {
 				$log.error("<field> tags must have 'name' and 'ng-model' attributes!");
@@ -73,7 +76,7 @@ app.directive('field', function(FormsService, $compile, $log) {
 				element.html(errorPlaceholder); return;
 			}
 			
-			var field_html = fieldTypeHandler.generateTemplate(modelName, fieldName, fieldMeta, formOptions);
+			var field_html = fieldTypeHandler.generateTemplate(formCtrl, modelName, fieldName, fieldMeta, formOptions);
 			element.replaceWith($compile(field_html)(scope));
 		}
 	};
