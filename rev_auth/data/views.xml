@@ -39,46 +39,11 @@
 						<span style="font-size:2em;">Please sign in</span>
 					</div>
 					<div class="panel-body">
-						<form name="loginForm" form-model="user" form-options="{'layout':'horizontal'}">
+						<form name="loginForm" model="User" var="user" layout="horizontal">
 						
 							<field name="username" />
 							<field name="password" />
-						
-							<!--
-							<div class="form-group" ng-class="{'has-error': loginForm.user_email.$invalid &amp;&amp; (loginForm.user_email.$touched || loginForm.$submitted)}">
-								<label for="user_email" class="col-sm-3 control-label">E-mail</label>
-								<div class="col-sm-9">
-									<input type="email" required="" name="user_email" ng-model="user.email"
-										class="form-control" placeholder="E-mail Address"
-										ng-disabled="loading" />
-									<div ng-show="loginForm.$submitted || loginForm.user_email.$touched" style="margin-top:5px;">
-										<p class="text-danger" ng-show="loginForm.user_email.$error.required">Please enter your e-mail address</p>
-										<p class="text-danger" ng-show="loginForm.user_email.$error.email">Please enter a valid e-mail address</p>
-									</div>
-								</div>
-							</div>
-							
-							<div class="form-group" ng-class="{'has-error': loginForm.user_password.$invalid &amp;&amp; (loginForm.user_password.$touched || loginForm.$submitted)}">
-								<label for="user_password" class="col-sm-3 control-label">Password</label>
-								<div class="col-sm-9">
-									<input type="password" required="" name="user_password" ng-model="user.password"
-										class="form-control" placeholder="Password"
-										ng-disabled="loading" />
-									<div ng-show="loginForm.$submitted || loginForm.user_password.$touched" style="margin-top:5px;">
-										<p class="text-danger" ng-show="loginForm.user_password.$error.required">Please enter your password</p>
-									</div>
-								</div>
-							</div>
-							-->
-							
-							<div class="form-group">
-								<div class="col-sm-offset-3 col-sm-9">
-									<div class="checkbox">
-										<label><input type="checkbox" name="remember_email" ng-model="user.remember_me"
-											ng-disabled="loading" /> Remember my e-mail address</label>
-									</div>
-								</div>
-							</div>
+							<field name="remember_me" />
 							
 							<div class="form-group">
 								<div class="col-sm-offset-3 col-sm-9">

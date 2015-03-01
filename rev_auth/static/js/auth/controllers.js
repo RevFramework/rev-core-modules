@@ -15,24 +15,7 @@ app.controller('UserMenuController', function($scope, UserService) {
 app.controller('LoginFormController', function($scope, UserService, NotifyService) {
 	
 	$scope.loading = false;
-	$scope.user = {
-	    _fields: {
-	        username: {
-	            field_type: 'TextField',
-	            label: 'Username',
-	            required: true,
-	            minlength: 6,
-	            placeholder: 'Username'
-	        },
-	        password: {
-	            field_type: 'PasswordField',
-	            label: 'Password',
-	            required: true,
-	            minlength: 6,
-	            placeholder: 'Password'
-	        }
-	    }
-	}
+	$scope.user = {};
 	
 	$scope.doLogin = function() {
 		if (!$scope.loginForm.$valid) {

@@ -1,0 +1,32 @@
+{% block form_widget %}
+	{% block divstart %}
+	<div class="form-group" ng-class="{'has-error': @{{form_attrs.name}}.@{{field_attrs.name}}.$invalid &amp;&amp; (@{{form_attrs.name}}.$submitted || (@{{form_attrs.name}}.@{{field_attrs.name}}.$touched &amp;&amp; @{{form_attrs.name}}.@{{field_attrs.name}}.$dirty))}">
+	{% endblock %}
+	{% if form_attrs.layout == 'horizontal' %}
+		<label for="@{{field_attrs.name}}" class="col-sm-3 control-label">
+	{% else %}
+		<label for="@{{field_attrs.name}}">
+	{% endif %}
+	{% block label_content %}
+			@{{field_attrs.label}}
+	{% endblock %}
+		</label>
+	{% if form_attrs.layout == 'horizontal' %}
+		<div class="col-sm-9">
+	{% endif %}
+	{% block input_content %}
+		input_content not defined!
+	{% endblock %}
+	{% block error_content %}
+		<div ng-show="@{{form_attrs.name}}.@{{field_attrs.name}}.$invalid &amp;&amp; (@{{form_attrs.name}}.$submitted || (@{{form_attrs.name}}.@{{field_attrs.name}}.$touched &amp;&amp; @{{form_attrs.name}}.@{{field_attrs.name}}.$dirty))">
+			{% if field_attrs.required %}<p class="text-danger" ng-show="@{{form_attrs.name}}.@{{field_attrs.name}}.$error.required">This field is required.</p>{% endif %}
+			{% if field_attrs.minlength %}<p class="text-danger" ng-show="@{{form_attrs.name}}.@{{field_attrs.name}}.$error.minlength">Please enter at least @{{field_attrs.minlength}} characters.</p>{% endif %}
+			{% if field_attrs.maxlength %}<p class="text-danger" ng-show="@{{form_attrs.name}}.@{{field_attrs.name}}.$error.maxlength">Maximum length is @{{field_attrs.maxlength}} characters.</p>{% endif %}
+			{% block extra_errors %}{% endblock %}
+		</div>
+	{% endblock %}
+	{% if form_attrs.layout == 'horizontal' %}
+		</div>
+	{% endif %}
+	</div>
+{% endblock %}

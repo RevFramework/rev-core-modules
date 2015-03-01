@@ -1,0 +1,11 @@
+{% extends 'form_widgets/FormWidget.j2' %}
+{% block label_content %}{% endblock %}
+{% block input_content %}
+<div class="checkbox"><label>
+<input type="checkbox"
+	name="@{{field_attrs.name}}"
+	ng-model="@{{form_attrs.var}}.@{{field_attrs.name}}"
+	{% if field_attrs.required %}ng-required="true"{% endif %}
+/> @{{field_attrs.label}}
+</label></div>
+{% endblock %}
