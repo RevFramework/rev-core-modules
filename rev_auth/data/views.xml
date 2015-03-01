@@ -39,24 +39,20 @@
 						<span style="font-size:2em;">Please sign in</span>
 					</div>
 					<div class="panel-body">
-						<form name="loginForm" model="User" var="user" layout="horizontal">
+						<rev-form model="User" var="user" layout="horizontal">
 						
 							<field name="username" />
 							<field name="password" />
 							<field name="remember_me" />
 							
-							<div class="form-group">
-								<div class="col-sm-offset-3 col-sm-9">
-									<button type="submit" class="btn btn-primary"
-										ng-click="doLogin()"
-										ng-disabled="loading">
-											Sign in
-									</button>
-									<img src="static/img/spinner.gif" ng-show="loading" />
-								</div>
-							</div>
-						</form>
-						
+							<fieldwrapper label="testings">
+								<button action="function" name="doLogin" label="Sign In" class="btn-primary" />
+								<button action="function" name="createAccount" label="Create Account" class="btn-default" />
+								<br />
+								<button action="function" name="forgotPassword" label="Forgotten Password?" class="btn-link" />
+							</fieldwrapper>
+
+						</rev-form>
 					</div>
 				</div>
 			

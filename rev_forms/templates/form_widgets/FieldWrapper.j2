@@ -1,0 +1,16 @@
+	<div class="form-group">
+	{% if form_attrs.layout == 'horizontal' %}
+		<label for="" class="col-sm-3 control-label">
+	{% else %}
+		<label for="">
+	{% endif %}
+			@{{wrapper_attrs.label}}
+		</label>
+	{% if form_attrs.layout == 'horizontal' %}
+		<div class="col-sm-9">
+	{% endif %}
+			<wrappercontent />
+	{% if form_attrs.layout == 'horizontal' %}
+		</div>
+	{% endif %}
+	</div>
