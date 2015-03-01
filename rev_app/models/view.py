@@ -25,102 +25,6 @@ def get_xml_child_element_string(parent_node, output_format='xml'):
     """
     return ''.join([etree.tostring(child_elem, pretty_print=True, method=output_format).decode('utf8') for child_elem in parent_node])
 
-def apply_view_modifications(base_view_source, modify_views, output_format='xml'):
-    """
-    Apply changes specified in the stack of modify_views to the target view.
-    
-    base_view_source - base view xml string
-    modify_view_sources - list of tuples with details of modify views. Tuples
-    should be in the format (module, view_id, view_source)
-    """
-    
-    #from pprint import pprint
-    #print('BASE VIEW:\n' + base_view_source)
-    #print('MODIFY VIEWS:')
-    #pprint(modify_views)
-    
-    base_xmldata = StringIO('<View>' + base_view_source + '</View>')
-    view_tree = etree.parse(base_xmldata)
-    
-    for modify_view_source in modify_views:
-        
-        m_view_module, m_view_id, m_view_source = modify_view_source
-        modify_view_id = "{}.{}".format(m_view_module, m_view_id)
-        modify_xmldata = StringIO('<View>' + m_view_source + '</View>')
-        modify_tree = etree.parse(modify_xmldata)
-        
-        for elem in modify_tree.getroot():
-    
-            if elem.tag is etree.Comment:
-                continue
-            if elem.tag != 'modify':
-                raise XMLImportError("Unexpected element '{}'. (View ID: {})".format(elem.tag, modify_view_id))
-            if 'xpath' not in elem.attrib:
-                raise XMLImportError("<modify> missing 'xpath' attribute. (View ID: {})".format(modify_view_id))
-            if 'action' not in elem.attrib:
-                raise XMLImportError("<modify> missing 'action' attribute. (View ID: {})".format(modify_view_id))
-            if elem.attrib['action'] not in MODIFY_ACTIONS:
-                raise XMLImportError("<modify> invalid action '{}'. Valid actions are: {}. (View ID: {})".format(elem.attrib['action'], MODIFY_ACTIONS, modify_view_id))
-    
-            xpath = elem.attrib['xpath']
-            action = elem.attrib['action']
-            position = -1
-            if 'position' in elem.attrib:
-                try:
-                    position = int(elem.attrib['position'])
-                except Exception:
-                    raise XMLImportError("<modify> 'position' attribute value must be an integer. (View ID: {})".format(modify_view_id))
-            
-            matches = []
-            try:
-                matches = view_tree.xpath(xpath)
-            except Exception as e:
-                raise XMLImportError("<modify> xpath query failed: {} (View ID: {})".format(e, modify_view_id))
-            
-            if len(matches) > 1:
-                raise XMLImportError("<modify> xpath matched more than one element in the target view. (View ID: {})\n\n **** TARGET VIEW ****\n\n{}\n\n **** MODIFICATION ****\n\n{}\n"
-                                        .format(modify_view_id,
-                                                get_xml_child_element_string(view_tree.getroot()).strip(),
-                                                etree.tostring(elem, pretty_print=True).decode('utf8').strip()))
-            
-            elif len(matches) == 0:
-                raise XMLImportError("<modify> xpath did not match any elements in the target view. (View ID: {})\n\n **** TARGET VIEW ****\n\n{}\n\n **** MODIFICATION ****\n\n{}\n"
-                                        .format(modify_view_id,
-                                                get_xml_child_element_string(view_tree.getroot()).strip(),
-                                                etree.tostring(elem, pretty_print=True).decode('utf8').strip()))
-        
-            match_elem = matches[0]
-            match_index = matches[0].getparent().index(matches[0])
-            match_parent = matches[0].getparent() 
-            
-            if action == 'remove':
-                match_parent.remove(match_elem)
-            elif action == 'replace':
-                match_parent.remove(match_elem)
-                new_index = match_index
-                for new_element in elem:
-                    match_parent.insert(new_index, new_element)
-                    new_index += 1
-            elif action == 'insert_before':
-                new_index = match_index
-                for new_element in elem:
-                    match_parent.insert(new_index, new_element)
-                    new_index += 1
-            elif action == 'insert_after':
-                new_index = match_index + 1
-                for new_element in elem:
-                    match_parent.insert(new_index, new_element)
-                    new_index += 1
-            elif action == 'insert_inside':
-                new_index = position
-                if position < 0:
-                    new_index = len(match_elem)
-                for new_element in elem:
-                    match_elem.insert(new_index, new_element)
-                    new_index += 1
-    
-    return get_xml_child_element_string(view_tree.getroot(), output_format=output_format)
-
 class View(MetadataModel):
 
     _description = 'Rev App UI View'
@@ -129,7 +33,7 @@ class View(MetadataModel):
     name = fields.TextField(_('View Name'), required=False)
     type = fields.SelectionField(_('View Type'), MODEL_VIEW_TYPES, required=False)
     model = fields.TextField(_('Model Name'), required=False)
-    source = fields.TextField(_('View Source Code'))
+    source = fields.MultilineTextField(_('View Source Code'))
     modify = fields.TextField(_('Modify View XML ID'), required=False)
     
     def xml_create_from_element(self, module, elem, context={}):
@@ -175,7 +79,107 @@ class View(MetadataModel):
             self.xml_create_from_element(module, elem, context)
         else:
             self.xml_update_from_element(module, elem, context)
+    
+    def view_post_process(self, view_xml_tree):
+        pass # OverrideModels can override this method to do any view post-processing that is required
 
+    def apply_view_modifications(self, base_view_source, modify_views, output_format='xml'):
+        """
+        Apply changes specified in the stack of modify_views to the target view.
+        
+        base_view_source - base view xml string
+        modify_view_sources - list of tuples with details of modify views. Tuples
+        should be in the format (module, view_id, view_source)
+        """
+        
+        #from pprint import pprint
+        #print('BASE VIEW:\n' + base_view_source)
+        #print('MODIFY VIEWS:')
+        #pprint(modify_views)
+        
+        base_xmldata = StringIO('<View>' + base_view_source + '</View>')
+        view_tree = etree.parse(base_xmldata)
+        
+        for modify_view_source in modify_views:
+            
+            m_view_module, m_view_id, m_view_source = modify_view_source
+            modify_view_id = "{}.{}".format(m_view_module, m_view_id)
+            modify_xmldata = StringIO('<View>' + m_view_source + '</View>')
+            modify_tree = etree.parse(modify_xmldata)
+            
+            for elem in modify_tree.getroot():
+        
+                if elem.tag is etree.Comment:
+                    continue
+                if elem.tag != 'modify':
+                    raise XMLImportError("Unexpected element '{}'. (View ID: {})".format(elem.tag, modify_view_id))
+                if 'xpath' not in elem.attrib:
+                    raise XMLImportError("<modify> missing 'xpath' attribute. (View ID: {})".format(modify_view_id))
+                if 'action' not in elem.attrib:
+                    raise XMLImportError("<modify> missing 'action' attribute. (View ID: {})".format(modify_view_id))
+                if elem.attrib['action'] not in MODIFY_ACTIONS:
+                    raise XMLImportError("<modify> invalid action '{}'. Valid actions are: {}. (View ID: {})".format(elem.attrib['action'], MODIFY_ACTIONS, modify_view_id))
+        
+                xpath = elem.attrib['xpath']
+                action = elem.attrib['action']
+                position = -1
+                if 'position' in elem.attrib:
+                    try:
+                        position = int(elem.attrib['position'])
+                    except Exception:
+                        raise XMLImportError("<modify> 'position' attribute value must be an integer. (View ID: {})".format(modify_view_id))
+                
+                matches = []
+                try:
+                    matches = view_tree.xpath(xpath)
+                except Exception as e:
+                    raise XMLImportError("<modify> xpath query failed: {} (View ID: {})".format(e, modify_view_id))
+                
+                if len(matches) > 1:
+                    raise XMLImportError("<modify> xpath matched more than one element in the target view. (View ID: {})\n\n **** TARGET VIEW ****\n\n{}\n\n **** MODIFICATION ****\n\n{}\n"
+                                            .format(modify_view_id,
+                                                    get_xml_child_element_string(view_tree.getroot()).strip(),
+                                                    etree.tostring(elem, pretty_print=True).decode('utf8').strip()))
+                
+                elif len(matches) == 0:
+                    raise XMLImportError("<modify> xpath did not match any elements in the target view. (View ID: {})\n\n **** TARGET VIEW ****\n\n{}\n\n **** MODIFICATION ****\n\n{}\n"
+                                            .format(modify_view_id,
+                                                    get_xml_child_element_string(view_tree.getroot()).strip(),
+                                                    etree.tostring(elem, pretty_print=True).decode('utf8').strip()))
+            
+                match_elem = matches[0]
+                match_index = matches[0].getparent().index(matches[0])
+                match_parent = matches[0].getparent() 
+                
+                if action == 'remove':
+                    match_parent.remove(match_elem)
+                elif action == 'replace':
+                    match_parent.remove(match_elem)
+                    new_index = match_index
+                    for new_element in elem:
+                        match_parent.insert(new_index, new_element)
+                        new_index += 1
+                elif action == 'insert_before':
+                    new_index = match_index
+                    for new_element in elem:
+                        match_parent.insert(new_index, new_element)
+                        new_index += 1
+                elif action == 'insert_after':
+                    new_index = match_index + 1
+                    for new_element in elem:
+                        match_parent.insert(new_index, new_element)
+                        new_index += 1
+                elif action == 'insert_inside':
+                    new_index = position
+                    if position < 0:
+                        new_index = len(match_elem)
+                    for new_element in elem:
+                        match_elem.insert(new_index, new_element)
+                        new_index += 1
+        
+        self.view_post_process(view_tree)
+        
+        return get_xml_child_element_string(view_tree.getroot(), output_format=output_format)
         
     def get_compiled_view(self, base_view_module, base_view_id, test_modify_view=None):
         """
@@ -198,16 +202,15 @@ class View(MetadataModel):
         modify_view_recs = self.find({'modify' : '{}.{}'.format(base_view_module, base_view_id)}, read_fields=['xml_module','xml_id','source'])
         
         tm_view_module, tm_view_id, tm_view_source = test_modify_view if test_modify_view else (None, None, None)
+
+        modify_views = []
         
         if not modify_view_recs:
             
             if tm_view_source:
-                return apply_view_modifications(base_view_source, [tm_view_source], 'html')
-            else:
-                # Output XML View as HTML
-                view_xmldata = StringIO('<View>' + base_view_source + '</View>')
-                view_tree = etree.parse(view_xmldata)
-                return get_xml_child_element_string(view_tree.getroot(), 'html')
+                modify_views.append(tm_view_source)
+
+            return self.apply_view_modifications(base_view_source, modify_views, 'html')
         
         else:
             
@@ -218,8 +221,6 @@ class View(MetadataModel):
             
             if test_modify_view and tm_view_module not in views_index:
                 views_index[tm_view_module] = {}
-            
-            modify_views = []
             
             # Load modify views in module load order, then alphabetically by xml_id (so there is determinism)
             for mod in self._registry.app.module_load_order:
@@ -232,11 +233,11 @@ class View(MetadataModel):
                         if test_modify_view and mod == tm_view_module and view_id == tm_view_id:
                             # test out the modifications
                             modify_views.append((tm_view_module, tm_view_id, tm_view_source))
-                            return apply_view_modifications(base_view_source, modify_views, 'html')
+                            return self.apply_view_modifications(base_view_source, modify_views, 'html')
                         else:
                             modify_views.append((mod, view_id, views_index[mod][view_id]))
         
-            return apply_view_modifications(base_view_source, modify_views, 'html')
+            return self.apply_view_modifications(base_view_source, modify_views, 'html')
 
     def get_rendered_view(self, module, view_id, view_context={}):
         """
